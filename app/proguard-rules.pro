@@ -23,3 +23,4 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+#混淆前务必注意将Java Bean,自定义组件添加进规则

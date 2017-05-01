@@ -21,10 +21,10 @@ import org.json.JSONObject;
 import java.util.List;
 
 import me.sheepyang.qladymvp.BuildConfig;
-import me.sheepyang.qladymvp.mvp.model.api.Api;
-import me.sheepyang.qladymvp.mvp.model.api.cache.CommonCache;
-import me.sheepyang.qladymvp.mvp.model.api.service.CommonService;
-import me.sheepyang.qladymvp.mvp.model.api.service.UserService;
+import me.sheepyang.qladymvp.app.api.Api;
+import me.sheepyang.qladymvp.app.api.cache.CommonCache;
+import me.sheepyang.qladymvp.app.api.service.CommonService;
+import me.sheepyang.qladymvp.app.api.service.UserService;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;

@@ -1,7 +1,13 @@
 package me.sheepyang.qladymvp.mvp.contract;
 
+import android.support.v4.app.Fragment;
+
+import com.flyco.tablayout.listener.CustomTabEntity;
 import com.jess.arms.mvp.IView;
 import com.jess.arms.mvp.IModel;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 通过Template生成对应页面的MVP和Dagger代码,请注意输入框中输入的名字必须相同
@@ -19,12 +25,17 @@ import com.jess.arms.mvp.IModel;
 public interface HomepageContract {
     //对于经常使用的关于UI的方法可以定义到BaseView中,如显示隐藏进度条,和显示文字消息
     interface View extends IView {
-        void setAdapter();
-        void setTabData();
+        void setAdapter(List<Fragment> fragmentList, List<String> titleList);
+
+        void setTabData(ArrayList<CustomTabEntity> tabEntityList);
     }
 
     //Model层定义接口,外部只需关心model返回的数据,无需关心内部细节,及是否使用缓存
     interface Model extends IModel {
+        List<String> getTabTitleList();
 
+        ArrayList<CustomTabEntity> getTabEntityList(List<String> tabTitleList);
+
+        List<Fragment> getTabFragmentList();
     }
 }

@@ -1,18 +1,14 @@
 package me.sheepyang.qladymvp.mvp.presenter;
 
 import android.app.Application;
-import android.content.Intent;
-import android.os.Handler;
 
 import com.jess.arms.integration.AppManager;
 import com.jess.arms.di.scope.ActivityScope;
 import com.jess.arms.mvp.BasePresenter;
 import com.jess.arms.widget.imageloader.ImageLoader;
-import com.socks.library.KLog;
 
 import me.jessyan.rxerrorhandler.core.RxErrorHandler;
-import me.sheepyang.qladymvp.mvp.contract.SplashContract;
-import me.sheepyang.qladymvp.mvp.ui.activity.SplashActivity;
+import me.sheepyang.qladymvp.mvp.contract.ModelListContract;
 
 import javax.inject.Inject;
 
@@ -28,19 +24,18 @@ import javax.inject.Inject;
 
 
 /**
- * Created by SheepYang on 2017/4/30 20:06.
+ * Created by SheepYang on 2017/5/1 16:36.
  */
 
 @ActivityScope
-public class SplashPresenter extends BasePresenter<SplashContract.Model, SplashContract.View> {
-    private static Handler mHandler = new Handler();
+public class ModelListPresenter extends BasePresenter<ModelListContract.Model, ModelListContract.View> {
     private RxErrorHandler mErrorHandler;
     private Application mApplication;
     private ImageLoader mImageLoader;
     private AppManager mAppManager;
 
     @Inject
-    public SplashPresenter(SplashContract.Model model, SplashContract.View rootView
+    public ModelListPresenter(ModelListContract.Model model, ModelListContract.View rootView
             , RxErrorHandler handler, Application application
             , ImageLoader imageLoader, AppManager appManager) {
         super(model, rootView);
@@ -48,10 +43,6 @@ public class SplashPresenter extends BasePresenter<SplashContract.Model, SplashC
         this.mApplication = application;
         this.mImageLoader = imageLoader;
         this.mAppManager = appManager;
-        mHandler.postDelayed(() -> {
-            mRootView.toHomepageActivity();
-            mRootView.killMyself();
-        }, model.getLoadTime());
     }
 
     @Override

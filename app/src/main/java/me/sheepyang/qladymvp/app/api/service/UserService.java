@@ -1,4 +1,4 @@
-package me.sheepyang.qladymvp.mvp.model.api.service;
+package me.sheepyang.qladymvp.app.api.service;
 
 /**
  * 存放关于用户的一些api

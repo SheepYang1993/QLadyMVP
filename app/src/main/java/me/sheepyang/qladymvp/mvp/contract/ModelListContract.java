@@ -3,6 +3,10 @@ package me.sheepyang.qladymvp.mvp.contract;
 import com.jess.arms.mvp.IView;
 import com.jess.arms.mvp.IModel;
 
+import java.util.List;
+
+import me.sheepyang.qladymvp.app.entity.ModelEntity;
+
 /**
  * 通过Template生成对应页面的MVP和Dagger代码,请注意输入框中输入的名字必须相同
  * 由于每个项目包结构都不一定相同,所以每生成一个文件需要自己导入import包名,可以在设置中设置自动导入包名
@@ -13,17 +17,21 @@ import com.jess.arms.mvp.IModel;
  */
 
 /**
- * Created by SheepYang on 2017/4/30 20:01.
+ * Created by SheepYang on 2017/5/1 16:36.
  */
 
-public interface SplashContract {
+public interface ModelListContract {
     //对于经常使用的关于UI的方法可以定义到BaseView中,如显示隐藏进度条,和显示文字消息
     interface View extends IView {
-        void toHomepageActivity();
+        void setAdapter();
+
+        void setBannerDelayTime(long time);
     }
 
     //Model层定义接口,外部只需关心model返回的数据,无需关心内部细节,及是否使用缓存
     interface Model extends IModel {
-        long getLoadTime();
+        List<ModelEntity> getModelList();
+
+        List<String> getBannarList();
     }
 }

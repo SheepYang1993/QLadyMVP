@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="me.sheepyang.qladymvp.ui.activity.HomePageActivity">
+    tools:context="me.sheepyang.qladymvp.mvp.ui.activity.HomepageActivity">
 
     <RelativeLayout
         android:layout_width="match_parent"

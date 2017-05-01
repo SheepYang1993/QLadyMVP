@@ -1,4 +1,4 @@
-package me.sheepyang.qladymvp.mvp.model.api;
+package me.sheepyang.qladymvp.app.api;
 
 /**
  * Created by SheepYang on 2017/4/30 18:26.

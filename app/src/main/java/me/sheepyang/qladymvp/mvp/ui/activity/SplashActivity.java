@@ -9,6 +9,7 @@ import android.view.View;
 import com.jess.arms.base.BaseActivity;
 import com.jess.arms.di.component.AppComponent;
 import com.jess.arms.utils.UiUtils;
+import com.socks.library.KLog;
 
 
 import me.sheepyang.qladymvp.R;
@@ -82,5 +83,11 @@ public class SplashActivity extends BaseActivity<SplashPresenter> implements Spl
     @Override
     public void killMyself() {
         finish();
+    }
+
+    @Override
+    public void toHomepageActivity() {
+        KLog.i();
+        launchActivity(new Intent(this, HomepageActivity.class));
     }
 }

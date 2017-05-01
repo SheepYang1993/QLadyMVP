@@ -1,4 +1,4 @@
-package me.sheepyang.qladymvp.mvp.model.api.cache;
+package me.sheepyang.qladymvp.app.api.cache;
 
 /**
  * Created by jess on 8/30/16 13:53

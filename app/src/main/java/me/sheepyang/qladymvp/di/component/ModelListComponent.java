@@ -1,7 +1,11 @@
-package me.sheepyang.qladymvp.mvp.contract;
+package me.sheepyang.qladymvp.di.component;
 
-import com.jess.arms.mvp.IView;
-import com.jess.arms.mvp.IModel;
+import com.jess.arms.di.component.AppComponent;
+import com.jess.arms.di.scope.ActivityScope;
+
+import dagger.Component;
+import me.sheepyang.qladymvp.di.module.ModelListModule;
+import me.sheepyang.qladymvp.mvp.ui.fragment.ModelListFragment;
 
 /**
  * 通过Template生成对应页面的MVP和Dagger代码,请注意输入框中输入的名字必须相同
@@ -13,17 +17,11 @@ import com.jess.arms.mvp.IModel;
  */
 
 /**
- * Created by SheepYang on 2017/4/30 20:01.
+ * Created by SheepYang on 2017/5/1 16:37.
  */
 
-public interface SplashContract {
-    //对于经常使用的关于UI的方法可以定义到BaseView中,如显示隐藏进度条,和显示文字消息
-    interface View extends IView {
-        void toHomepageActivity();
-    }
-
-    //Model层定义接口,外部只需关心model返回的数据,无需关心内部细节,及是否使用缓存
-    interface Model extends IModel {
-        long getLoadTime();
-    }
+@ActivityScope
+@Component(modules = ModelListModule.class, dependencies = AppComponent.class)
+public interface ModelListComponent {
+    void inject(ModelListFragment fragment);
 }

@@ -24,6 +24,9 @@ import com.youth.banner.Banner;
 import com.youth.banner.listener.OnBannerListener;
 import com.zhy.autolayout.utils.ScreenUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import butterknife.BindView;
 import me.sheepyang.qladymvp.R;
 import me.sheepyang.qladymvp.app.entity.ModelEntity;
@@ -59,6 +62,7 @@ public class ModelListFragment extends BaseFragment<ModelListPresenter> implemen
     private SinaRefreshView mHeadView;
     private boolean mIsShowBannar;
     private boolean mIsIvAvatarClickable = true;
+    private List<ModelEntity> mData = new ArrayList<>();
 
     public static ModelListFragment newInstance(boolean isShowBannar, boolean isIvAvatarClickable) {
         ModelListFragment fragment = new ModelListFragment();

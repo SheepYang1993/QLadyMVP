@@ -3,15 +3,15 @@ package me.sheepyang.qladymvp.mvp.model;
 import android.app.Application;
 
 import com.google.gson.Gson;
+import com.jess.arms.di.scope.ActivityScope;
 import com.jess.arms.integration.IRepositoryManager;
 import com.jess.arms.mvp.BaseModel;
 
-import static com.jess.arms.utils.Preconditions.checkNotNull;
-
-import com.jess.arms.di.scope.ActivityScope;
+import java.util.List;
 
 import javax.inject.Inject;
 
+import me.sheepyang.qladymvp.app.entity.ModelEntity;
 import me.sheepyang.qladymvp.mvp.contract.ModelListContract;
 
 /**
@@ -46,4 +46,18 @@ public class ModelListModel extends BaseModel implements ModelListContract.Model
         this.mApplication = null;
     }
 
+    @Override
+    public List<ModelEntity> getModelList() {
+        return null;
+    }
+
+    @Override
+    public List<String> getBannarList() {
+        return null;
+    }
+
+    @Override
+    public long getBannerDelayTime() {
+        return 3000;
+    }
 }

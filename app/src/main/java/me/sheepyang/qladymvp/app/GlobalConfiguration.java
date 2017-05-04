@@ -1,9 +1,14 @@
 package me.sheepyang.qladymvp.app;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 
+import com.jess.arms.base.App;
 import com.jess.arms.base.delegate.AppDelegate;
 import com.jess.arms.di.module.GlobalConfigModule;
 import com.jess.arms.http.GlobalHttpHandler;
@@ -19,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import me.sheepyang.qladymvp.BuildConfig;
 import me.sheepyang.qladymvp.app.api.Api;
@@ -32,10 +38,11 @@ import timber.log.Timber;
 
 /**
  * app的全局配置信息在此配置,需要将此实现类声明到AndroidManifest中
- * 用来配置一些,框架需要的自定义属性,可自行扩展
  * Created by jess on 12/04/2017 17:25
  * Contact with jess.yan.effort@gmail.com
  */
+
+
 public class GlobalConfiguration implements ConfigModule {
     @Override
     public void applyOptions(Context context, GlobalConfigModule.Builder builder) {
@@ -90,7 +97,20 @@ public class GlobalConfiguration implements ConfigModule {
                        rxjava必要要使用ErrorHandleSubscriber(默认实现Subscriber的onError方法),此监听才生效 */
                     Timber.w("------------>" + e.getMessage());
                     UiUtils.SnackbarText("net error");
-                });
+                })
+                .gsonConfiguration((context12, gsonBuilder) -> {//这里可以自己自定义配置Gson的参数
+                    gsonBuilder
+                            .serializeNulls()//支持序列化null的参数
+                            .enableComplexMapKeySerialization();//支持将序列化key为object的map,默认只能序列化key为string的map
+                })
+                .retrofitConfiguration((context1, retrofitBuilder) -> {//这里可以自己自定义配置Retrofit的参数,甚至你可以替换系统配置好的okhttp对象
+//                    retrofitBuilder.addConverterFactory(FastJsonConverterFactory.create());//比如使用fastjson替代gson
+                })
+                .okhttpConfiguration((context1, okhttpBuilder) -> {//这里可以自己自定义配置Okhttp的参数
+                    okhttpBuilder.writeTimeout(10, TimeUnit.SECONDS);
+                }).rxCacheConfiguration((context1, rxCacheBuilder) -> {//这里可以自己自定义配置RxCache的参数
+            rxCacheBuilder.useExpiredDataIfLoaderNotAvailable(true);
+        });
     }
 
     @Override
@@ -103,7 +123,6 @@ public class GlobalConfiguration implements ConfigModule {
     public void injectAppLifecycle(Context context, List<AppDelegate.Lifecycle> lifecycles) {
         // AppDelegate.Lifecycle 的所有方法都会在基类Application对应的生命周期中被调用,所以在对应的方法中可以扩展一些自己需要的逻辑
         lifecycles.add(new AppDelegate.Lifecycle() {
-            private RefWatcher mRefWatcher;//leakCanary观察器
 
             @Override
             public void onCreate(Application application) {
@@ -111,12 +130,82 @@ public class GlobalConfiguration implements ConfigModule {
                     Timber.plant(new Timber.DebugTree());
                 }
                 //leakCanary内存泄露检查
-                this.mRefWatcher = BuildConfig.USE_CANARY ? LeakCanary.install(application) : RefWatcher.DISABLED;
+                ((App) application).getAppComponent().extras().put(RefWatcher.class.getName(), BuildConfig.USE_CANARY ? LeakCanary.install(application) : RefWatcher.DISABLED);
             }
 
             @Override
             public void onTerminate(Application application) {
-                this.mRefWatcher = null;
+
+            }
+        });
+    }
+
+    @Override
+    public void injectActivityLifecycle(Context context, List<Application.ActivityLifecycleCallbacks> lifecycles) {
+        lifecycles.add(new Application.ActivityLifecycleCallbacks() {
+            @Override
+            public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+                //这里全局给Activity设置toolbar和title,你想象力有多丰富,这里就有多强大,以前放到BaseActivity的操作都可以放到这里
+//                if (activity.findViewById(R.id.toolbar) != null) {
+//                    if (activity instanceof AppCompatActivity) {
+//                        ((AppCompatActivity) activity).setSupportActionBar((Toolbar) activity.findViewById(R.id.toolbar));
+//                        ((AppCompatActivity) activity).getSupportActionBar().setDisplayShowTitleEnabled(false);
+//                    } else {
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                            activity.setActionBar((android.widget.Toolbar) activity.findViewById(R.id.toolbar));
+//                            activity.getActionBar().setDisplayShowTitleEnabled(false);
+//                        }
+//                    }
+//                }
+//                if (activity.findViewById(R.id.toolbar_title) != null) {
+//                    ((TextView) activity.findViewById(R.id.toolbar_title)).setText(activity.getTitle());
+//                }
+//                if (activity.findViewById(R.id.toolbar_back) != null) {
+//                    activity.findViewById(R.id.toolbar_back).setOnClickListener(v -> {
+//                        activity.onBackPressed();
+//                    });
+//                }
+            }
+
+
+            @Override
+            public void onActivityStarted(Activity activity) {
+
+            }
+
+            @Override
+            public void onActivityResumed(Activity activity) {
+
+            }
+
+            @Override
+            public void onActivityPaused(Activity activity) {
+
+            }
+
+            @Override
+            public void onActivityStopped(Activity activity) {
+
+            }
+
+            @Override
+            public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+
+            }
+
+            @Override
+            public void onActivityDestroyed(Activity activity) {
+
+            }
+        });
+    }
+
+    @Override
+    public void injectFragmentLifecycle(Context context, List<FragmentManager.FragmentLifecycleCallbacks> lifecycles) {
+        lifecycles.add(new FragmentManager.FragmentLifecycleCallbacks() {
+            @Override
+            public void onFragmentDestroyed(FragmentManager fm, Fragment f) {
+                ((RefWatcher) ((App) f.getActivity().getApplication()).getAppComponent().extras().get(RefWatcher.class.getName())).watch(this);
             }
         });
     }

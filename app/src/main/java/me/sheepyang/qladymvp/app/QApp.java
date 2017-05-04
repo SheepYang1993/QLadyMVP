@@ -2,7 +2,6 @@ package me.sheepyang.qladymvp.app;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 
 import com.blankj.utilcode.util.Utils;
 import com.jess.arms.base.BaseApplication;
@@ -35,6 +34,7 @@ public class QApp extends BaseApplication {
     public void toLogin(Context context) {
         if (context instanceof Activity) {
             //TODO
+            KLog.i();
 //            ((Activity) context).startActivityForResult(new Intent(context, LoginActivity.class), REQUEST_LOGIN);
         }
     }

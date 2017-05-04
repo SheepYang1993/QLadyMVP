@@ -7,6 +7,7 @@ import com.jess.arms.di.scope.ActivityScope;
 import com.jess.arms.integration.IRepositoryManager;
 import com.jess.arms.mvp.BaseModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -48,16 +49,36 @@ public class ModelListModel extends BaseModel implements ModelListContract.Model
 
     @Override
     public List<ModelEntity> getModelList() {
-        return null;
+        List<ModelEntity> modelList = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            ModelEntity entity = new ModelEntity();
+            entity.setImgPath("http://img1.mm131.com/pic/2889/m.jpg");
+            entity.setAvatarPath("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1492624497119&di=298dc98d6977a37dab24f902d091ddd2&imgtype=0&src=http%3A%2F%2Fk2.jsqq.net%2Fuploads%2Fallimg%2F1702%2F7_170228144936_2.jpg");
+            modelList.add(entity);
+        }
+        return modelList;
     }
 
     @Override
     public List<String> getBannarList() {
-        return null;
+        List<String> bannarList = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            bannarList.add("http://www.tuigirl.com/Public/webupload/rouruan/tg_58b2f30c88086.jpg");
+        }
+        return bannarList;
     }
 
     @Override
-    public long getBannerDelayTime() {
+    public List<String> getBannarPlaceholderList() {
+        List<String> bannarList = new ArrayList<>();
+        for (int i = 0; i < 5; i++) {
+            bannarList.add("http://img1.mm131.com/pic/2889/m.jpg");
+        }
+        return bannarList;
+    }
+
+    @Override
+    public int getBannerDelayTime() {
         return 3000;
     }
 }

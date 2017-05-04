@@ -11,25 +11,30 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
 
+import com.blankj.utilcode.util.ScreenUtils;
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.jess.arms.base.BaseFragment;
+import com.jess.arms.base.DefaultAdapter;
 import com.jess.arms.di.component.AppComponent;
-import com.jess.arms.utils.LogUtils;
 import com.jess.arms.utils.UiUtils;
 import com.lcodecore.tkrefreshlayout.RefreshListenerAdapter;
 import com.lcodecore.tkrefreshlayout.TwinklingRefreshLayout;
 import com.lcodecore.tkrefreshlayout.footer.LoadingView;
 import com.lcodecore.tkrefreshlayout.header.SinaRefreshView;
+import com.socks.library.KLog;
+import com.tbruyelle.rxpermissions.RxPermissions;
 import com.youth.banner.Banner;
 import com.youth.banner.listener.OnBannerListener;
-import com.zhy.autolayout.utils.ScreenUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import me.sheepyang.qladymvp.R;
+import me.sheepyang.qladymvp.app.QApp;
+import me.sheepyang.qladymvp.app.entity.BannerModelListEntity;
 import me.sheepyang.qladymvp.app.entity.ModelEntity;
+import me.sheepyang.qladymvp.app.loader.GlideImageLoader;
 import me.sheepyang.qladymvp.di.component.DaggerModelListComponent;
 import me.sheepyang.qladymvp.di.module.ModelListModule;
 import me.sheepyang.qladymvp.mvp.contract.ModelListContract;
@@ -51,7 +56,7 @@ import static com.jess.arms.utils.Preconditions.checkNotNull;
  * Created by SheepYang on 2017/5/1 16:37.
  */
 
-public class ModelListFragment extends BaseFragment<ModelListPresenter> implements ModelListContract.View {
+public class ModelListFragment extends BaseFragment<ModelListPresenter> implements ModelListContract.View, OnBannerListener {
     private static final String PARAM_IS_SHOW_BANNAR = "param_is_show_bannar";
     private static final String PARAM_IS_IV_AVATAR_CLICKABLE = "param_is_iv_avatar_clickable";
     @BindView(R.id.recycler_view)
@@ -63,6 +68,9 @@ public class ModelListFragment extends BaseFragment<ModelListPresenter> implemen
     private boolean mIsShowBannar;
     private boolean mIsIvAvatarClickable = true;
     private List<ModelEntity> mData = new ArrayList<>();
+    private List<String> mBannarList;
+    private Banner mBannar;
+    private RxPermissions mRxPermissions;
 
     public static ModelListFragment newInstance(boolean isShowBannar, boolean isIvAvatarClickable) {
         ModelListFragment fragment = new ModelListFragment();
@@ -83,7 +91,8 @@ public class ModelListFragment extends BaseFragment<ModelListPresenter> implemen
     }
 
     @Override
-    protected void setupFragmentComponent(AppComponent appComponent) {
+    public void setupFragmentComponent(AppComponent appComponent) {
+        this.mRxPermissions = new RxPermissions(getActivity());
         DaggerModelListComponent
                 .builder()
                 .appComponent(appComponent)
@@ -93,24 +102,43 @@ public class ModelListFragment extends BaseFragment<ModelListPresenter> implemen
     }
 
     @Override
-    protected View initView(LayoutInflater inflater, ViewGroup container) {
+    public View initView(LayoutInflater inflater, ViewGroup container) {
         return inflater.inflate(R.layout.layout_refresh_rv, container, false);
     }
 
     @Override
-    protected void initData() {
+    public void initData() {
         initView();
         initListener();
+//        initMyData();
+        mPresenter.pullToRefresh(true);
+    }
+
+    private void initMyData() {
+        if (mIsShowBannar) {
+            mBannar.postDelayed(() -> {
+                List<String> bannarList = mPresenter.requestBannarList();
+                mBannar.update(bannarList);
+            }, 5000);
+        }
+        mData.clear();
+        for (int i = 0; i < 4; i++) {
+            ModelEntity entity = new ModelEntity();
+            entity.setImgPath("http://img1.mm131.com/pic/2889/m.jpg");
+            entity.setAvatarPath("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1492624497119&di=298dc98d6977a37dab24f902d091ddd2&imgtype=0&src=http%3A%2F%2Fk2.jsqq.net%2Fuploads%2Fallimg%2F1702%2F7_170228144936_2.jpg");
+            mData.add(entity);
+        }
+        mAdapter.updata(mData);
     }
 
     private void initView() {
-        mHeadView = new SinaRefreshView(mActivity);
+        mHeadView = new SinaRefreshView(getActivity());
         mHeadView.setArrowResource(R.drawable.ico_pink_arrow);
         mRefreshLayout.setHeaderView(mHeadView);
-        mRefreshLayout.setBottomView(new LoadingView(mActivity));
+        mRefreshLayout.setBottomView(new LoadingView(getActivity()));
 
         mRecyclerView.setHasFixedSize(true);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         mAdapter = new ModelDetailAdapter(mData);
         mAdapter.isFirstOnly(true);
@@ -118,17 +146,15 @@ public class ModelListFragment extends BaseFragment<ModelListPresenter> implemen
         mRecyclerView.setAdapter(mAdapter);
 
         if (mIsShowBannar) {
-            for (int i = 0; i < 5; i++) {
-                mBannarList.add("http://img1.mm131.com/pic/2889/m.jpg");
-            }
+            mBannarList = mPresenter.requestBannarPlaceholderList();
 
-            View header = LayoutInflater.from(mActivity).inflate(R.layout.header_bannar, (ViewGroup) mRecyclerView.getParent(), false);
+            View header = LayoutInflater.from(getActivity()).inflate(R.layout.header_bannar, (ViewGroup) mRecyclerView.getParent(), false);
             mBannar = (Banner) header.findViewById(R.id.banner);
             mBannar.setLayoutParams(new AbsListView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ScreenUtils.getScreenWidth() / 3));
             mAdapter.addHeaderView(mBannar);
             //简单使用
             mBannar.setImages(mBannarList)
-                    .setDelayTime(3000)
+                    .setDelayTime(mPresenter.requestDelayTime())
 //                    .setBannerStyle(BannerConfig.NUM_INDICATOR)
                     .setImageLoader(new GlideImageLoader())
                     .setOnBannerListener(this)
@@ -138,16 +164,7 @@ public class ModelListFragment extends BaseFragment<ModelListPresenter> implemen
 
     private void initListener() {
         if (mIsShowBannar) {
-            mBannar.setOnBannerListener(new OnBannerListener() {
-                @Override
-                public void OnBannerClick(int position) {
-                    if (mApp.isLogin()) {
-                        LogUtils.i("点击了banner:" + position);
-                    } else {
-                        mApp.toLogin(mActivity);
-                    }
-                }
-            });
+            mBannar.setOnBannerListener(this);
         }
         mAdapter.setOnItemChildClickListener(new BaseQuickAdapter.OnItemChildClickListener() {
             @Override
@@ -155,7 +172,8 @@ public class ModelListFragment extends BaseFragment<ModelListPresenter> implemen
                 switch (view.getId()) {
                     case R.id.iv_avatar:
                         if (mIsIvAvatarClickable) {
-                            startActivity(new Intent(mContext, ModelDetailActivity.class));
+                            KLog.i();
+//                            startActivity(new Intent(mActivity, ModelDetailActivity.class));
                         }
                         break;
                     default:
@@ -166,46 +184,49 @@ public class ModelListFragment extends BaseFragment<ModelListPresenter> implemen
         mAdapter.setOnItemClickListener(new BaseQuickAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(BaseQuickAdapter adapter, View view, int position) {
-                startActivity(new Intent(mContext, ModelPhotoActivity.class));
+                KLog.i();
+//                startActivity(new Intent(mActivity, ModelPhotoActivity.class));
             }
         });
         mRefreshLayout.setOnRefreshListener(new RefreshListenerAdapter() {
             @Override
             public void onRefresh(TwinklingRefreshLayout refreshLayout) {
                 super.onRefresh(refreshLayout);
-                mRefreshLayout.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        mData.clear();
-                        for (int i = 0; i < 4; i++) {
-                            ModelEntity entity = new ModelEntity();
-                            entity.setImgPath("http://img1.mm131.com/pic/2889/m.jpg");
-                            entity.setAvatarPath("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1492624497119&di=298dc98d6977a37dab24f902d091ddd2&imgtype=0&src=http%3A%2F%2Fk2.jsqq.net%2Fuploads%2Fallimg%2F1702%2F7_170228144936_2.jpg");
-                            mData.add(entity);
-                        }
-                        mAdapter.updata(mData);
-                        mRefreshLayout.finishRefreshing();
-                    }
-                }, 1000);
+                mPresenter.pullToRefresh(true);
+//                mRefreshLayout.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        mData.clear();
+//                        for (int i = 0; i < 4; i++) {
+//                            ModelEntity entity = new ModelEntity();
+//                            entity.setImgPath("http://img1.mm131.com/pic/2889/m.jpg");
+//                            entity.setAvatarPath("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1492624497119&di=298dc98d6977a37dab24f902d091ddd2&imgtype=0&src=http%3A%2F%2Fk2.jsqq.net%2Fuploads%2Fallimg%2F1702%2F7_170228144936_2.jpg");
+//                            mData.add(entity);
+//                        }
+//                        mAdapter.updata(mData);
+//                        mRefreshLayout.finishRefreshing();
+//                    }
+//                }, 1000);
             }
 
             @Override
             public void onLoadMore(TwinklingRefreshLayout refreshLayout) {
                 super.onLoadMore(refreshLayout);
-                mRefreshLayout.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (int i = 0; i < 3; i++) {
-                            ModelEntity entity = new ModelEntity();
-                            entity.setLock(true);
-                            entity.setImgPath("http://img1.mm131.com/pic/2889/m.jpg");
-                            entity.setAvatarPath("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1492624497119&di=298dc98d6977a37dab24f902d091ddd2&imgtype=0&src=http%3A%2F%2Fk2.jsqq.net%2Fuploads%2Fallimg%2F1702%2F7_170228144936_2.jpg");
-                            mData.add(entity);
-                        }
-                        mAdapter.updata(mData);
-                        mRefreshLayout.finishLoadmore();
-                    }
-                }, 1000);
+//                mRefreshLayout.postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        for (int i = 0; i < 3; i++) {
+//                            ModelEntity entity = new ModelEntity();
+//                            entity.setLock(true);
+//                            entity.setImgPath("http://img1.mm131.com/pic/2889/m.jpg");
+//                            entity.setAvatarPath("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1492624497119&di=298dc98d6977a37dab24f902d091ddd2&imgtype=0&src=http%3A%2F%2Fk2.jsqq.net%2Fuploads%2Fallimg%2F1702%2F7_170228144936_2.jpg");
+//                            mData.add(entity);
+//                        }
+//                        mAdapter.updata(mData);
+//                        mRefreshLayout.finishLoadmore();
+//                    }
+//                }, 1000);
+                mPresenter.pullToRefresh(false);
             }
         });
     }
@@ -225,7 +246,11 @@ public class ModelListFragment extends BaseFragment<ModelListPresenter> implemen
 
     @Override
     public void setData(Object data) {
-
+        if (data instanceof BannerModelListEntity) {
+            mBannar.update(((BannerModelListEntity) data).getBannerList());
+            mData = ((BannerModelListEntity) data).getModelEntityList();
+            mAdapter.updata(mData);
+        }
     }
 
 
@@ -236,7 +261,12 @@ public class ModelListFragment extends BaseFragment<ModelListPresenter> implemen
 
     @Override
     public void hideLoading() {
+        mRefreshLayout.finishRefreshing();
+    }
 
+    @Override
+    public void hideLoadMore() {
+        mRefreshLayout.finishLoadmore();
     }
 
     @Override
@@ -256,4 +286,49 @@ public class ModelListFragment extends BaseFragment<ModelListPresenter> implemen
 
     }
 
+    @Override
+    public void OnBannerClick(int position) {
+        KLog.i("点击了banner:" + position);
+        if (((QApp) getActivity().getApplicationContext()).isLogin()) {
+            KLog.i("已登录");
+        } else {
+            ((QApp) getActivity().getApplicationContext()).toLogin(getActivity());
+        }
+    }
+
+    @Override
+    public RxPermissions getRxPermissions() {
+        return mRxPermissions;
+    }
+
+    @Override
+    public boolean isShowBanner() {
+        return mIsShowBannar;
+    }
+
+    //如果你需要考虑更好的体验，可以这么操作
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (mIsShowBannar) {
+            //开始轮播
+            mBannar.startAutoPlay();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (mIsShowBannar) {
+            //结束轮播
+            mBannar.stopAutoPlay();
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        DefaultAdapter.releaseAllHolder(mRecyclerView);//super.onDestroy()之后会unbind,所有view被置为null,所以必须在之前调用
+        super.onDestroy();
+        this.mRxPermissions = null;
+    }
 }

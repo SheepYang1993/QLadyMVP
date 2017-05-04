@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.view.LayoutInflater;
 import android.view.View;
 
 import com.flyco.tablayout.CommonTabLayout;
@@ -13,7 +12,6 @@ import com.flyco.tablayout.listener.OnTabSelectListener;
 import com.jess.arms.base.BaseActivity;
 import com.jess.arms.di.component.AppComponent;
 import com.jess.arms.utils.UiUtils;
-import com.socks.library.KLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +49,7 @@ public class HomepageActivity extends BaseActivity<HomepagePresenter> implements
     private long mCurrentTime;
 
     @Override
-    protected void setupActivityComponent(AppComponent appComponent) {
+    public void setupActivityComponent(AppComponent appComponent) {
         DaggerHomepageComponent
                 .builder()
                 .appComponent(appComponent)
@@ -61,12 +59,12 @@ public class HomepageActivity extends BaseActivity<HomepagePresenter> implements
     }
 
     @Override
-    protected View initView() {
-        return LayoutInflater.from(this).inflate(R.layout.activity_homepage, null, false);
+    public int initView() {
+        return R.layout.activity_homepage;
     }
 
     @Override
-    protected void initData() {
+    public void initData() {
         initListener();
     }
 
@@ -144,11 +142,11 @@ public class HomepageActivity extends BaseActivity<HomepagePresenter> implements
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.iv_mine:
-                if (((QApp) mApp).isLogin()) {
+                if (((QApp) getApplicationContext()).isLogin()) {
                     //TODO
 //                    startActivity(new Intent(this, MineActivity.class));
                 } else {
-                    ((QApp) mApp).toLogin(this);
+                    ((QApp) getApplicationContext()).toLogin(this);
                 }
                 break;
             case R.id.iv_search:

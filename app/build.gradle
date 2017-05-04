@@ -48,7 +48,7 @@ buildscript {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     //    compile project(':arms')
-    compile 'me.jessyan:arms:1.5.2'
+    compile 'me.jessyan:arms:1.6.0'
     provided rootProject.ext.dependencies["javax.annotation"]
     annotationProcessor rootProject.ext.dependencies["dagger2-compiler"]
     annotationProcessor rootProject.ext.dependencies["butterknife-compiler"]
@@ -60,6 +60,7 @@ dependencies {
     compile rootProject.ext.dependencies["utilcode"]
     compile rootProject.ext.dependencies["glide-transformations"]
     compile rootProject.ext.dependencies["photo-view"]
+    compile rootProject.ext.dependencies["imagepicker"]
     //test
     testCompile rootProject.ext.dependencies["junit"]
     debugCompile rootProject.ext.dependencies["canary-debug"]

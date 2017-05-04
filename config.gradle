@@ -54,6 +54,7 @@ ext {
             "utilcode"                     : "com.blankj:utilcode:1.3.7",
             "glide-transformations"        : "jp.wasabeef:glide-transformations:2.0.2",
             "photo-view"                   : "com.github.chrisbanes:PhotoView:2.0.0",
+            "imagepicker"                  : "com.lzy.widget:imagepicker:0.5.4",
 
             //rx
             "rxandroid"                    : "io.reactivex:rxandroid:1.2.1",

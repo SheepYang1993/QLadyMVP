@@ -2,15 +2,27 @@ package me.sheepyang.qladymvp.mvp.presenter;
 
 import android.app.Application;
 
-import com.jess.arms.integration.AppManager;
 import com.jess.arms.di.scope.ActivityScope;
+import com.jess.arms.integration.AppManager;
 import com.jess.arms.mvp.BasePresenter;
+import com.jess.arms.utils.PermissionUtil;
 import com.jess.arms.widget.imageloader.ImageLoader;
 
-import me.jessyan.rxerrorhandler.core.RxErrorHandler;
-import me.sheepyang.qladymvp.mvp.contract.ModelListContract;
+import java.util.List;
 
 import javax.inject.Inject;
+
+import me.jessyan.rxerrorhandler.core.RxErrorHandler;
+import me.sheepyang.qladymvp.app.entity.BannerModelListEntity;
+import me.sheepyang.qladymvp.app.entity.ModelEntity;
+import me.sheepyang.qladymvp.app.utils.RxUtils;
+import me.sheepyang.qladymvp.mvp.contract.ModelListContract;
+import me.sheepyang.qladymvp.mvp.ui.fragment.ModelListFragment;
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Func2;
+import rx.schedulers.Schedulers;
 
 
 /**
@@ -54,4 +66,63 @@ public class ModelListPresenter extends BasePresenter<ModelListContract.Model, M
         this.mApplication = null;
     }
 
+    public int requestDelayTime() {
+        return mModel.getBannerDelayTime();
+    }
+
+    public List<String> requestBannarPlaceholderList() {
+        return mModel.getBannarPlaceholderList();
+    }
+
+    public List<String> requestBannarList() {
+        return mModel.getBannarList();
+    }
+
+    public void pullToRefresh(boolean isPullToRefresh) {
+        //请求外部存储权限用于适配android6.0的权限管理机制
+        PermissionUtil.externalStorage(() -> {
+            //request permission success, do something.
+        }, mRootView.getRxPermissions(), mRootView, mErrorHandler);
+
+        Observable<BannerModelListEntity> result =
+                Observable.zip(
+                        Observable.just(mModel.getBannarList()),
+                        Observable.just(mModel.getModelList()), new Func2<List<String>, List<ModelEntity>, BannerModelListEntity>() {
+                            @Override
+                            public BannerModelListEntity call(List<String> strings, List<ModelEntity> modelEntities) {
+                                return new BannerModelListEntity(strings, modelEntities);
+                            }
+                        }
+                );
+
+        result.subscribeOn(Schedulers.io())
+//                .retryWhen(new RetryWithDelay(3, 2))//遇到错误时重试,第一个参数为重试几次,第二个参数为重试的间隔
+//                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doAfterTerminate(() -> {
+                    if (isPullToRefresh)
+                        mRootView.hideLoading();//隐藏下拉加载更多的进度条
+                    else
+                        mRootView.hideLoadMore();//隐藏上拉刷新的进度条
+                })
+                .compose(RxUtils.bindToLifecycle(mRootView))//使用RXlifecycle,使subscription和activity一起销毁
+                .subscribe(new Subscriber<BannerModelListEntity>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onNext(BannerModelListEntity entity) {
+                        if (mRootView instanceof ModelListFragment) {
+                            ((ModelListFragment) mRootView).setData(entity);
+                        }
+                    }
+                });
+    }
 }
